@@ -2,8 +2,7 @@ package HRCLS.cli
 import HRCLS.cli.callSignMenu.callSignMenu
 import HRCLS.cli.infoMenu.infoMenu
 import HRCLS.cli.logsMenu.logsMenu
-import HRCLS.utils.input._
-import HRCLS.utils.output._
+import HRCLS.utils.io._
 
 import scala.io.StdIn
 
@@ -43,10 +42,11 @@ object mainMenu {
   }
   def mainMenu(): Unit = {
     var loop = true;
-    println("===================================================================");
-    println("<<>> Welcome to H.R.C.L.S : Ham Radio Contact Logging Software <<>>")
-    println("                    <<>> Created by KO4FNN <<>>                    ")
-    println("===================================================================");
+    println("============================================");
+    println("       <<>> Welcome to H.R.C.L.S <<>>       ");
+    println("<<>> Ham Radio Contact Logging Software <<>>")
+    println("         <<>> Created by KO4FNN <<>>        ")
+    println("============================================");
     showMainCommands();
     while( loop ) {
       StdIn.readLine(">:") match {

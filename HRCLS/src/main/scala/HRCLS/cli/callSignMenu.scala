@@ -1,9 +1,7 @@
 package HRCLS.cli
 import HRCLS.dao.callSignDAO
 import HRCLS.model.CallSign
-import HRCLS.utils.input._
-import HRCLS.utils.output._
-import org.mongodb.scala.bson.ObjectId
+import HRCLS.utils.io._
 
 import scala.io.StdIn
 
@@ -110,13 +108,11 @@ object callSignMenu {
   def viewCallSign(arg: String) {
     var call: CallSign = null;
     var str: String = null;
-    if (arg == "") {
-      str = StdIn.readLine("\tEnter a call sign to view: ").toUpperCase
-      call = callSignDAO.getCallSign(str);
-    }else {
+    if (arg == "")
+      str = StdIn.readLine("\tEnter a call sign to view: ")
+    else
       str = arg.toUpperCase
-      call = callSignDAO.getCallSign(str);
-    }
+    call = callSignDAO.getCallSign(str);
     if (call == null)
       println(s"${str} could not be found in the list")
     else
@@ -134,52 +130,51 @@ object callSignMenu {
   def editCallSign(arg: String): Unit = {
     var call: CallSign = null;
     var str: String = null;
-    if (arg == "") {
+    if (arg == "")
       str = StdIn.readLine("\tEnter a call sign to edit: ").toUpperCase
-    }else {
+    else
       str = arg.toUpperCase
-    }
     call = callSignDAO.getCallSign(str);
     if (call == null)
       println(s"${str} could not be found in the directory")
     else {
       var in = StdIn.readLine(s"\tFirst Name: ${call.firstName} -> : ");
-      if (in != "") call.firstName = in.capitalize;
+      if (in != "") call.firstName = in;
       in = StdIn.readLine(s"\tLast Name: ${call.lastName} -> : ");
-      if (in != "") call.lastName = in.capitalize;
+      if (in != "") call.lastName = in;
       in = StdIn.readLine(s"\tCall Sign: ${call.callSign} -> : ");
-      if (in != "") call.callSign = in.toUpperCase;
+      if (in != "") call.callSign = in;
       in = StdIn.readLine(s"\tCity: ${call.city} -> : ");
-      if (in != "") call.city = in.capitalize;
+      if (in != "") call.city = in;
       in = StdIn.readLine(s"\tState: ${call.state} -> : ");
-      if (in != "") call.state = in.toUpperCase;
+      if (in != "") call.state = in;
       callSignDAO.editCallSign(str, call)
-      println(s"the information for ${call.callSign} is being updated");
+      println(s"the information for ${call.callSign.toUpperCase} is being updated");
     }
   }
   def removeCallSign(arg: String): Unit = {
     var str: String = null;
     if (arg == "")
-      str = StdIn.readLine("\tEnter a call sign to edit: ").toUpperCase
+      str = StdIn.readLine("\tEnter a call sign to edit: ")
     else
-      str = arg.toUpperCase
+      str = arg
     val call = callSignDAO.getCallSign(str);
     if (call == null)
       println(s"\t${str} could not be found in the directory")
     else {
       callSignDAO.removeCallSign(call.callSign)
-      println(s"\t${call.callSign} is being removed from the directory");
+      println(s"\t${call.callSign.toUpperCase} is being removed from the directory");
     };
   }
   def addCallSign(arg: String): Unit = {
     var first, last, callSign, city, state:String = "";
     var call: CallSign = null;
     if(arg == "") {
-      first = StdIn.readLine(s"\tFirst Name: ").capitalize;
-      last = StdIn.readLine(s"\tLast Name: ").capitalize;
-      callSign = StdIn.readLine(s"\tCall Sign: ").toUpperCase;
-      city = StdIn.readLine(s"\tCity: ").capitalize;
-      state = StdIn.readLine(s"\tState: ").toUpperCase;
+      first = StdIn.readLine(s"\tFirst Name: ");
+      last = StdIn.readLine(s"\tLast Name: ");
+      callSign = StdIn.readLine(s"\tCall Sign: ");
+      city = StdIn.readLine(s"\tCity: ");
+      state = StdIn.readLine(s"\tState: ");
       if(callSign == "") {
         println("call sign cannot be empty");
         return;
@@ -188,11 +183,11 @@ object callSignMenu {
     else {
       val args: Array[String] = arg.split(" ");
       if (args.length == 5){
-        first = args(0).capitalize;
-        last = args(1).capitalize;
-        callSign = args(2).toUpperCase;
-        city = args(3).capitalize;
-        state = args(4).toUpperCase;
+        first = args(0);
+        last = args(1);
+        callSign = args(2);
+        city = args(3);
+        state = args(4);
       }else{
         println("\tyou have used an incorrect syntax for the calls add shortcut");
         println("\t<> add [firstName] [lastName] [callSign] [city] [state]");
@@ -201,8 +196,8 @@ object callSignMenu {
     }
     call = callSignDAO.getCallSign(callSign);
     if (call == null) {
-      callSignDAO.addCallSign( CallSign(new ObjectId(), first, last, callSign, city, state) )
-      println(s"adding information for $callSign to the directory")
+      callSignDAO.addCallSign( CallSign(first, last, callSign, city, state) )
+      println(s"adding information for ${callSign.toUpperCase} to the directory")
     } else
       addExistingCallSign(call, first, last, callSign, city, state);
   }
@@ -216,10 +211,10 @@ object callSignMenu {
         call.city = city;
         call.state = state;
         callSignDAO.editCallSign(call.callSign, call);
-        println(s"\tthe information for ${call.callSign} is being updated");
+        println(s"\tthe information for ${call.callSign.toUpperCase} is being updated");
       }
       case default => {
-        println(s"\tnot changing any information for ${call.callSign}");
+        println(s"\tnot changing any information for ${call.callSign.toUpperCase}");
       }
     }
   }

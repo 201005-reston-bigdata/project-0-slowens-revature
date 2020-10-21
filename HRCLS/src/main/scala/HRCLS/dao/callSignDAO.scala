@@ -12,7 +12,7 @@ import scala.util.{Failure, Success}
 
 object callSignDAO {
   val codec  = fromRegistries(fromProviders(classOf[CallSign]), MongoClient.DEFAULT_CODEC_REGISTRY);
-  val collection : MongoCollection[CallSign] = getMongoCollectionWithCodec("HRCLS", "user_info", codec);
+  val collection : MongoCollection[CallSign] = getMongoCollectionWithCodec[CallSign]("HRCLS", "calls", codec);
 
   def getAllCallSigns(): Seq[CallSign] = {
     getResults(collection.find());
@@ -25,21 +25,22 @@ object callSignDAO {
     }
   }
   def editCallSign(call: String, obj: CallSign): Unit = {
-    collection.findOneAndReplace(equal("callSign", call), obj).toFuture().onComplete {
+    collection.findOneAndReplace(equal("callSign", call.toUpperCase), obj).toFuture().onComplete {
       case Success(v) => "replace" ;
       case Failure(e) => e.printStackTrace();
     }
   }
   def removeCallSign(call: String): Unit = {
-    collection.findOneAndDelete(equal("callSign", call)).toFuture().onComplete {
+    collection.findOneAndDelete(equal("callSign", call.toUpperCase)).toFuture().onComplete {
       case Success(v) if v == null => { s"$call was not found in the directory" };
       case Success(v) => { s"$call has been removed from the directory" };
       case Failure(e) => e.printStackTrace();
     }
   }
   def getCallSign(call: String): CallSign = {
+    println(call)
     try {
-      getResults((collection.find(equal("callSign", call))))(0)
+      getResults((collection.find(equal("callSign", call.toUpperCase))))(0)
     }catch {
       case e:IndexOutOfBoundsException => null
     }

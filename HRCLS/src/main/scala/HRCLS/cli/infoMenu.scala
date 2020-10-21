@@ -1,16 +1,16 @@
 package HRCLS.cli
-import HRCLS.utils.output._
-import HRCLS.utils.input._
+import HRCLS.utils.io._
 import HRCLS.dao.userDAO
 import HRCLS.model.User
 
-import scala.io.StdIn
+import scala.io.{Source, StdIn}
 
 object infoMenu {
   def showInfoCommands(): Unit = {
     printTitle("<<>> Personal Information <<>>");
     println("<> view \t\t::\t\tview your saved personal information");
     println("<> edit \t\t::\t\tedit your saved personal information");
+    println("<> edit_file \t::\t\tupload personal information from a csv");
     println("<> help \t\t::\t\tlist all available commands");
     underline("<> exit \t\t::\t\treturn to the main menu");
   }
@@ -20,6 +20,8 @@ object infoMenu {
     println("<> edit \t\t::\t\tedit your saved personal information");
     println("<> edit [firstName] [lastName] [callSign] [city] [state]");
     println("        \t\t::\t\tedit personal information without the prompt");
+    println("<> edit_file\t::\t\tupload personal information from a CSV");
+    println("\t\t\t\t::\t\tfirstName, lastName, callSign, City, State");
     println("<> help \t\t::\t\tlist all available commands");
     underline("<> exit \t\t::\t\treturn to the main menu");
   }
@@ -28,7 +30,9 @@ object infoMenu {
     println("<> info view \t::\t\tview your saved personal information");
     println("<> info edit \t::\t\tedit your saved personal information");
     println("<> info edit [firstName] [lastName] [callSign] [city] [state]");
-    underline("\t\t\t\t::\t\tedit personal information without the prompt");
+    println("\t\t\t\t::edit personal information without the prompt");
+    println("<> info edit_file \t::\t\tupload personal information from a CSV");
+    underline("\t\t\t\t::\t\tfirstName, lastName, callSign, City, State");
   }
   def infoMenu(arg: String): Unit = {
     if (arg != ""){
@@ -38,6 +42,9 @@ object infoMenu {
         }
         case cmdPattern(cmd, arg) if cmd.equals("edit") => {
           editInfo(arg);
+        }
+        case cmdPattern(cmd, arg) if cmd.equals("edit_file") => {
+          editInfoFromFile(arg);
         }
         case default => {
           println(s"\t$default isn't a recognized info shortcut");
@@ -56,6 +63,10 @@ object infoMenu {
           }
           case cmdPattern(cmd, arg) if cmd.equals("edit") => {
             editInfo(arg);
+            showInfoCommands()
+          }
+          case cmdPattern(cmd, arg) if cmd.equals("edit_file") => {
+            editInfoFromFile(arg);
             showInfoCommands()
           }
           case cmdPattern(cmd, arg) if cmd.equals("exit") => {
@@ -79,6 +90,27 @@ object infoMenu {
     println(s"\tName: ${user.firstName} ${user.lastName}");
     println(s"\tLocation: ${user.city}, ${user.state}");
   }
+  def editInfoFromFile(arg: String): Unit = {
+    val file = if( arg == "") StdIn.readLine("Enter a CSV file to import your information from: ") else arg;
+    try {
+      val doc = Source.fromFile(file)
+      val lines = doc.getLines().toArray
+      doc.close()
+      val fields = lines(0).split(",");
+      if (fields.length == 5) {
+        userDAO.pushToMongo(User(fields(0), fields(1), fields(2), fields(3), fields(4)))
+      }
+      else {
+        println(s"$file isn't a properly formatted file");
+      }
+    }
+    catch {
+      case e: ClassNotFoundException => {
+        println(s"$file isn't a properly formatted file");
+      }
+    }
+
+  }
   def editInfo(arg: String): Unit = {
     val user: User = userDAO.getFromMongo()
     if( arg == "" ){
@@ -93,7 +125,8 @@ object infoMenu {
       if (in != "") user.city = in.capitalize;
       in = StdIn.readLine(s"\tState: ${user.state} -> : ");
       if (in != "") user.state = in.toUpperCase;
-    }else{
+    }
+    else{
       val args: Array[String] = arg.split(" ");
       if (args.length == 5){
         user.firstName = args(0).capitalize
